@@ -9,7 +9,7 @@ const buzz=p=>{try{if(buzzOn)navigator.vibrate&&navigator.vibrate(p)}catch(e){}}
 
 /* ---------- константы ---------- */
 const N=8, LEVELS=30;
-const SAVE_KEY='kb-save-v1', PROG_KEY='kb-prog-v1', LB_KEY='kb-lb-v1';
+const SAVE_KEY='kb-save-v2', PROG_KEY='kb-prog-v1', LB_KEY='kb-lb-v1';
 const THEMES=['Лазурный штрек','Изумрудный грот','Аметистовая пещера','Рубиновый штрек','Золотая галерея'];
 const COLORS=[
 {main:'#ff2e78',name:'Рубин'},
@@ -51,6 +51,52 @@ return p;}
 function shapeW(s){let m=0;for(const c of s)m=Math.max(m,c[0]+1);return m}
 function shapeH(s){let m=0;for(const c of s)m=Math.max(m,c[1]+1);return m}
 function goalForLevel(lv){return Math.round(350+lv*130+lv*lv*20)}
+
+/* ---------- «порода» на поле: стартовые занятые клетки (как в Block Blast) ---------- */
+const ROCK_COLORS=['#4a3b2a','#3d4a5c','#4e3f52','#37483d','#54432e'];
+function rockTint(level){
+  const t=(level-1)/(LEVELS-1);
+  return [Math.round(6+t*8),Math.round(9+t*10),Math.round(13+t*10)];}
+function fillRatio(level,mode_){
+  if(mode_==='zen')return .07;
+  const t=(level-1)/(LEVELS-1);
+  return Math.min(.42,.10+t*.34);}
+/* генерация застывшей породы: пятна + одиночные кристаллы-препятствия */
+function makeRock(level,mode_){
+  newBoard();
+  const target=Math.round(N*N*fillRatio(level,mode_));
+  let guard=0;
+  while(countCells()<target&&guard++<500){
+    const kind=Math.random();
+    let sh;
+    if(kind<.42)sh=[[0,0]];
+    else if(kind<.68)sh=Math.random()<.5?[[0,0],[1,0]]:[[0,0],[0,1]];
+    else if(kind<.86)sh=Math.random()<.5?[[0,0],[1,0],[0,1]]:[[0,0],[1,0],[2,0]];
+    else sh=[[0,0],[1,0],[0,1],[1,1]];
+    const w=shapeW(sh),h=shapeH(sh);
+    const r=Math.floor(Math.random()*(N-h+1)),c=Math.floor(Math.random()*(N-w+1));
+    if(!fits(sh,r,c))continue;
+    const isGem=Math.random()<.35;
+    for(const [dx,dy] of sh)
+      board[r+dy][c+dx]=isGem
+        ?{gem:true,col:Math.floor(Math.random()*COLORS.length),placeAt:performance.now()}
+        :{rock:true,tint:Math.floor(Math.random()*ROCK_COLORS.length),placeAt:performance.now()};
+  }
+  /* не оставляем ловушек: если хоть одна фигура не встаёт — чистим центр */
+  if(!hasAnyFitCell())clearSomeRock(6);
+  if(!hasAnyFitCell())clearSomeRock(10);}
+function countCells(){let n=0;for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(board[r][c])n++;return n}
+function hasAnyFitCell(){
+  for(let r=0;r<N;r++)for(let c=0;c<N;c++){
+    if(board[r][c])continue;
+    if(!board[r][c+1]||!board[r+1]?.[c]||c===0||r===0)return true;}
+  return false;}
+function clearSomeRock(k){
+  const cells=[];
+  for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(board[r][c]&&(board[r][c].rock||board[r][c].gem))cells.push([r,c]);
+  for(let i=0;i<k&&cells.length;i++){
+    const idx=Math.floor(Math.random()*cells.length);
+    const [r,c]=cells.splice(idx,1)[0];board[r][c]=null;}}
 
 /* ---------- звук (WebAudio, тембры как в «Самоцветах») ---------- */
 const snd={on:store.get('kb-sound','1')!=='0',ctx:null,
@@ -120,6 +166,26 @@ ctx.beginPath();ctx.ellipse(x+s*.34,y+s*.3,s*.14,s*.085,-.6,0,7);ctx.fill();
 ctx.fillStyle='rgba(0,0,0,.2)';
 rr(x+s*.14,y+s*.72,s*.72,s*.15,s*.08);ctx.fill();
 ctx.globalAlpha=1;}
+function drawRock(x,y,s,tint,seed){
+  const base=ROCK_COLORS[tint];
+  const g=ctx.createLinearGradient(x,y,x+s,y+s);
+  g.addColorStop(0,shade(base,1.25));g.addColorStop(.6,base);g.addColorStop(1,shade(base,.55));
+  rr(x+s*.03,y+s*.03,s*.94,s*.94,s*.2);ctx.fillStyle=g;ctx.fill();
+  ctx.strokeStyle='rgba(0,0,0,.4)';ctx.lineWidth=Math.max(1,s*.045);ctx.stroke();
+  /* трещинки-грани, стабильные для клетки */
+  ctx.strokeStyle='rgba(0,0,0,.32)';ctx.lineWidth=Math.max(.8,s*.03);
+  const h=(seed*733)%100/100;
+  ctx.beginPath();
+  ctx.moveTo(x+s*(.2+h*.2),y+s*.15);
+  ctx.lineTo(x+s*(.45+h*.15),y+s*.55);
+  ctx.lineTo(x+s*(.3+h*.2),y+s*.85);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(x+s*.55,y+s*(.3+h*.2));
+  ctx.lineTo(x+s*.85,y+s*(.5+h*.25));
+  ctx.stroke();
+  ctx.fillStyle='rgba(255,255,255,.10)';
+  rr(x+s*.12,y+s*.12,s*.4,s*.16,s*.08);ctx.fill();}
 function hasCell(sh,r,c){for(const q of sh)if(q[0]===c&&q[1]===r)return true;return false}
 function draw(){
 requestAnimationFrame(draw);
@@ -156,7 +222,8 @@ if(b.clear){const t=Math.min(1,(now-(b.clearAt||now))/260);
 drawBlock(x+cell*.05-(s*t)/2,y+cell*.05-(s*t)/2,s*(1+t*.55),COLORS[b.col].main,1-t*.95,true);continue;}
 const pt=b.placeAt?Math.min(1,(now-b.placeAt)/180):1;
 const e=1-Math.pow(1-pt,3),sz=s*(.6+.4*e);
-drawBlock(x+(s-sz)/2+cell*.05,y+(s-sz)/2+cell*.05,sz,COLORS[b.col].main,1,false);}
+if(b.rock){drawRock(x+(s-sz)/2+cell*.05,y+(s-sz)/2+cell*.05,sz,b.tint||0,r*N+c);continue;}
+drawBlock(x+(s-sz)/2+cell*.05,y+(s-sz)/2+cell*.05,sz,COLORS[b.col].main,1,!!b.gem);}
 /* частицы */
 for(const p of parts){ctx.globalAlpha=Math.max(0,p.l);ctx.fillStyle=p.c;
 ctx.beginPath();ctx.arc(p.x,p.y,Math.max(.5,p.r*p.l),0,7);ctx.fill();}
@@ -170,7 +237,13 @@ pieces=[];used=[false,false,false];
 for(let i=0;i<3;i++){
 const si=pool[Math.floor(Math.random()*pool.length)];
 pieces.push({sh:SHAPES[si],col:Math.floor(Math.random()*COLORS.length)});}
-sel=-1;renderTray();}
+sel=-1;
+/* милосердие: если ни одна из трёх фигур не встаёт — перегенерируем (до 8 попыток) */
+for(let t=0;t<8&&!canPlaceAny();t++){
+for(let i=0;i<3;i++){
+const si=pool[Math.floor(Math.random()*pool.length)];
+pieces[i]={sh:SHAPES[si],col:Math.floor(Math.random()*COLORS.length)};}}
+renderTray();}
 function pieceSVG(P,scale){
 const w=shapeW(P.sh),h=shapeH(P.sh),s=scale;let out='';
 for(const [dx,dy] of P.sh){
@@ -234,26 +307,50 @@ for(let q=0;q<lines;q++)setTimeout(()=>snd.pop(q+1),q*90);
 if(lines>=2)setTimeout(()=>banner(lines>=3?'МЕГА-ВЗРЫВ!':'КОМБО ×'+lines,'teal'),120);
 else if(comboChain>=2)setTimeout(()=>banner('ШТУРМ ×2','teal'),120);
 setTimeout(()=>{
-for(const r2 of rows)for(let cc=0;cc<N;cc++){if(board[r2][cc])spawnParts(r2,cc,COLORS[board[r2][cc].col].main);board[r2][cc]=null}
-for(const cc of cols)for(let r2=0;r2<N;r2++){if(board[r2][cc])spawnParts(r2,cc,COLORS[board[r2][cc].col].main);board[r2][cc]=null}
+for(const r2 of rows)for(let cc=0;cc<N;cc++){if(board[r2][cc]){spawnParts(r2,cc,board[r2][cc].rock?'#8b7a5e':COLORS[board[r2][cc].col].main);board[r2][cc]=null}}
+for(const cc of cols)for(let r2=0;r2<N;r2++){if(board[r2][cc]){spawnParts(r2,cc,board[r2][cc].rock?'#8b7a5e':COLORS[board[r2][cc].col].main);board[r2][cc]=null}}
 animating=false;finishPlace(gained);},340);
 }else{comboChain=0;snd.place();buzz(8);finishPlace(gained);}}
 function finishPlace(gained){
 score+=gained;bumpEl($('#score'));updateHUD();updateChips();
+/* «Кирка»: разово пробить породу/кристалл в любой занятой клетке */
+const tool=$('#toolRock');
+if(tool&&!tool.hidden){tool.querySelector('.cnt').textContent=picksLeft;
+tool.disabled=picksLeft<=0||!hasRockOnBoard();}
 if(used.every(u=>u)&&!over)setTimeout(()=>{if(!over)spawnTray()},240);else renderTray();
 saveGame();
 checkLevelGoal();
 if(!over)setTimeout(()=>{if(!over&&!animating&&!canPlaceAny())gameOver();},520);}
+function hasRockOnBoard(){
+for(let r=0;r<N;r++)for(let c=0;c<N;c++){const b=board[r][c];if(b&&(b.rock||b.gem))return true;}
+return false;}
+let rockMode=false;
+function toggleRockMode(){
+if(over||animating)return;
+if(picksLeft<=0){snd.bad();banner('Кирки закончились!','bad');return}
+if(!hasRockOnBoard()){snd.bad();return}
+rockMode=!rockMode;
+const t=$('#toolRock');
+if(t)t.classList.toggle('on',rockMode);
+if(rockMode){snd.pick();banner('Выбери породу для удара киркой','teal');}}
+function pickRock(r,c){
+const b=board[r][c];if(!b||!(b.rock||b.gem))return;
+spawnParts(r,c,b.rock?'#8b7a5e':COLORS[b.col].main);
+board[r][c]=null;
+picksLeft--;
+snd.noise(.1,.12,700);buzz(15);
+rockMode=false;const t=$('#toolRock');if(t){t.classList.remove('on');
+t.querySelector('.cnt').textContent=picksLeft;t.disabled=picksLeft<=0||!hasRockOnBoard()}
+saveGame();}
 
 /* ---------- HUD ---------- */
 const fmt=n=>Math.round(n).toLocaleString('ru-RU');
 function updateHUD(){
 $('#score').textContent=fmt(score);
 $('#best').textContent=fmt(mode==='zen'?bestZ:bestC);
-if(mode==='classic'){
-$('#lblMid').textContent='Уровень';$('#mid').textContent=level;
+if(mode==='classic'){$('#lblMid').textContent='Уровень';$('#mid').textContent=level;
 const g=goalForLevel(level);
-$('#lblRight').textContent='Цель';$('#moves').textContent=fmt(g);
+$('#lblRight').textContent='Породы';$('#moves').textContent=countCells()+' кл.';
 $('#goalLbl').textContent='Прогресс уровня '+level;
 $('#goalNum').textContent=fmt(Math.min(score,g))+' / '+fmt(g);
 $('#barFill').style.width=Math.min(100,score/g*100)+'%';
@@ -276,7 +373,14 @@ function banner(txt,cls){const b=$('#banner');b.textContent=txt;b.className='ban
 void b.offsetWidth;b.classList.add('show');}
 
 /* ---------- перетаскивание ---------- */
-const drag={active:false,idx:-1,r:-99,c:-99,ok:false};
+const drag={active:false,idx:-1,r:-99,c:-99,ok:false,toolPick:null};
+/* тап по занятой породе/кристаллу в режиме кирки */
+cv.addEventListener('pointerdown',e=>{
+if(!rockMode||over||animating)return;
+const rect=cv.getBoundingClientRect();
+const c=Math.floor((e.clientX-rect.left-pad)/cell),r=Math.floor((e.clientY-rect.top-pad)/cell);
+if(r<0||c<0||r>=N||c>=N)return;
+pickRock(r,c);});
 const ghost=$('#dragGhost');
 function attachDrag(div,i){
 div.addEventListener('pointerdown',e=>{
@@ -310,31 +414,41 @@ drag.idx=-1;}
 /* ---------- сохранение партии ---------- */
 function saveGame(){
 if(mode!=='classic'||over&&!wonFlag)return;
-try{store.set(SAVE_KEY,JSON.stringify({level,score,board,pieces,used,placedCount,maxCombo,ts:Date.now()}));}catch(e){}}
+try{store.set(SAVE_KEY,JSON.stringify({level,score,board,pieces,used,placedCount,maxCombo,picksLeft,ts:Date.now()}));}catch(e){}}
 function loadGame(){try{const d=JSON.parse(store.get(SAVE_KEY,'null'));
 if(!d||!Array.isArray(d.board)||d.board.length!==N||!Array.isArray(d.pieces)||d.pieces.length!==3)return null;
+/* совместимость со старыми сохранениями: у клеток должен быть хотя бы col */
+for(let r=0;r<N;r++){if(!Array.isArray(d.board[r])||d.board[r].length!==N)return null;
+for(let c=0;c<N;c++){const b=d.board[r][c];if(b&&b.col===undefined&&!(b.rock||b.gem))return null;}}
 return d}catch(e){return null}}
 function clearSave(){store.del(SAVE_KEY)}
 
 /* ---------- уровни / победа / поражение ---------- */
 function newBoard(){board=[];for(let r=0;r<N;r++)board.push(new Array(N).fill(null))}
+let picksLeft=0;
+function refreshTool(){const t=$('#toolRock');if(!t)return;
+t.hidden=mode!=='classic'||over;
+t.classList.toggle('off',picksLeft<=0);
+t.disabled=picksLeft<=0||!hasRockOnBoard();}
 function startClassic(lv){
 mode='classic';level=Math.max(1,Math.min(LEVELS,lv||prog.unlocked||1));wonFlag=false;
 score=0;comboChain=0;maxCombo=1;rushUntil=0;placedCount=0;over=false;animating=false;
-newBoard();spawnTray();
+picksLeft=2;rockMode=false;
+makeRock(level,'classic');spawnTray();
 $('#startOv').classList.add('hidden');$('#endOv').classList.add('hidden');$('#lvlOv').classList.add('hidden');
-updateHUD();updateChips();saveGame();banner('УРОВЕНЬ '+level,'teal');}
+updateHUD();updateChips();refreshTool();saveGame();banner('УРОВЕНЬ '+level,'teal');}
 function startZen(){
 mode='zen';wonFlag=true;
 score=0;comboChain=0;maxCombo=1;rushUntil=0;placedCount=0;over=false;animating=false;
-newBoard();spawnTray();
+picksLeft=0;rockMode=false;
+makeRock(level,'zen');spawnTray();
 $('#startOv').classList.add('hidden');$('#endOv').classList.add('hidden');
-updateHUD();updateChips();banner('🧘 ДЗЕН','teal');}
+updateHUD();updateChips();refreshTool();banner('🧘 ДЗЕН','teal');}
 function checkLevelGoal(){
 if(mode!=='classic'||over||animating)return;
 if(score>=goalForLevel(level))levelWin();}
 function levelWin(){
-over=true;wonFlag=true;
+over=true;wonFlag=true;rockMode=false;refreshTool();
 const g=goalForLevel(level);
 let st=1;if(score>=g*1.35)st=2;if(score>=g*1.7)st=3;
 if(st>starsOf(level))prog.stars[level]=st;
@@ -345,7 +459,7 @@ pushLb();snd.win();buzz([30,60,30,60,60]);
 banner('УРОВЕНЬ ПРОЙДЕН!','teal');
 setTimeout(()=>showEnd(true,st,false),950);}
 function gameOver(){
-if(over)return;over=true;wonFlag=false;snd.lose();buzz([60,60,120]);
+if(over)return;over=true;wonFlag=false;rockMode=false;refreshTool();snd.lose();buzz([60,60,120]);
 banner('НЕТ МЕСТА!','bad');
 let rec=false;
 if(mode==='classic'){if(score>bestC){bestC=score;store.set('kb-best-classic',bestC);rec=true}}
@@ -413,7 +527,8 @@ $('#btnContinue').onclick=()=>{
 const d=loadGame();if(!d)return;snd.init();
 mode='classic';level=d.level||1;score=d.score||0;board=d.board;pieces=d.pieces;used=d.used;
 placedCount=d.placedCount||0;maxCombo=d.maxCombo||1;comboChain=0;rushUntil=0;over=false;wonFlag=false;
-$('#startOv').classList.add('hidden');renderTray();updateHUD();updateChips();};
+picksLeft=(typeof d.picksLeft==='number')?d.picksLeft:2;rockMode=false;
+$('#startOv').classList.add('hidden');renderTray();updateHUD();updateChips();refreshTool();};
 $('#btnHow').onclick=()=>$('#howOv').classList.remove('hidden');
 $('#btnHowClose').onclick=()=>$('#howOv').classList.add('hidden');
 $('#btnLb').onclick=()=>{renderLb();$('#lbOv').classList.remove('hidden')};
@@ -429,6 +544,7 @@ $('#btnSoundSet').textContent=snd.on?'Вкл':'Выкл';$('#btnSoundSet').class
 $('#btnMenu').onclick=()=>{refreshStart();$('#startOv').classList.remove('hidden')};
 $('#btnRestart').onclick=()=>{if(mode==='zen')startZen();else startClassic(level)};
 $('#btnLevels').onclick=()=>{renderLevels();$('#lvlOv').classList.remove('hidden')};
+$('#toolRock').onclick=toggleRockMode;
 $('#btnLvlClose').onclick=()=>$('#lvlOv').classList.add('hidden');
 $('#btnAgain').onclick=()=>{if(mode==='zen')startZen();else startClassic(level)};
 $('#btnNext').onclick=()=>{if(level<LEVELS)startClassic(level+1)};

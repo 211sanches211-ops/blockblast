@@ -112,6 +112,8 @@ box-shadow:0 4px 0 #0a7a64, 0 12px 20px rgba(0,0,0,.35)}
 .btn.mode .t{font-family:'Unbounded',system-ui,sans-serif;font-weight:700;font-size:15px}
 .btn.mode small{font-size:11px;font-weight:800;opacity:.7}
 .btn.off{opacity:.45;filter:grayscale(.5)}
+.btn[hidden]{display:none!important}
+.btn.on{background:linear-gradient(#ffe89a,#ffb02e);box-shadow:0 0 0 2px #ffd66b,0 0 18px rgba(255,214,107,.7),0 4px 0 #9c6a00}
 .cnt{position:absolute;top:-8px;right:-8px;min-height:20px;padding:0 6px;border-radius:99px;
 background:linear-gradient(#ffd66b,#ffb02e);color:#3a2400;font-family:'Unbounded',system-ui,sans-serif;
 font-size:10px;font-weight:700;display:grid;place-items:center;
@@ -262,6 +264,7 @@ min-height:100dvh;padding:30px}
 <button class="btn ghost icon" id="btnRestart" title="Заново">↻</button>
 <button class="btn ghost icon" id="btnMenu" title="В меню">🏠</button>
 <button class="btn ghost icon" id="btnSound" title="Звук">🔊</button>
+<button class="btn ghost icon" id="toolRock" title="Кирка: пробить породу" hidden>⛏️<span class="cnt">2</span></button>
 </div>
 <div class="best">Рекорд:<b id="best">0</b></div>
 </aside>
@@ -305,7 +308,9 @@ min-height:100dvh;padding:30px}
 <ul class="rules">
 <li>🖐 <b>Перетащи</b> один из трёх блоков внизу на поле 8×8.</li>
 <li>👻 Призрак покажет, встанет ли блок. <b>Зелёный</b> — можно, <b>красный</b> — мешает порода.</li>
-<li>💥 Соберёшь <b>полный ряд или столбец</b> — он взрывается и приносит очки.</li>
+<li>🪨 На поле сразу есть <b>застывшая порода и кристаллы-препятствия</b> — вставляй фигуры только в свободные ячейки.</li>
+<li>⛏️ В Классике доступны <b>2 удара киркой</b> за уровень: нажми ⛏️ и тапни по породе, чтобы разбить её.</li>
+<li>💥 Соберёшь <b>полный ряд или столбец</b> — он взрывается вместе с породой в нём!</li>
 <li>🔥 Несколько линий за одну установку — <b>комбо-множитель</b> и штурм ×2!</li>
 <li>🎯 В Классике набирай очки цели уровня, чтобы проходить дальше и получать ⭐.</li>
 <li>🚫 Блок нельзя поставить никуда — партия окончена.</li>
