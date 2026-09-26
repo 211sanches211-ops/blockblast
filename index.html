@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#081520">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Кристаллы">
+<title>Кристаллы — блоки в ряд</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" media="print" onload="this.media='all'"
+href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Nunito:wght@400;700;800;900&display=swap">
+<noscript><link rel="stylesheet"
+href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Nunito:wght@400;700;800;900&display=swap"></noscript>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+--glowA:rgba(56,224,200,.10);--glowB:rgba(255,176,46,.10);
+--base1:#0e2434;--base2:#081520;--base3:#050d14;--frameA:#143249;--frameB:#0b1d2c;
+font-family:'Nunito',system-ui,sans-serif;color:#e8f4ff;overflow-x:hidden;
+-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;
+background:
+radial-gradient(1100px 750px at 88% -12%, var(--glowA), transparent 60%),
+radial-gradient(950px 700px at -12% 108%, var(--glowB), transparent 60%),
+radial-gradient(900px 900px at 50% 45%, var(--base1) 0%, var(--base2) 68%, var(--base3) 100%);
+background-attachment:fixed;}
+body[data-theme="1"]{--glowA:rgba(46,230,168,.13);--glowB:rgba(58,160,255,.10);
+--base1:#0d2b26;--base2:#071a16;--base3:#04100c;--frameA:#12463c;--frameB:#0b2c26;}
+body[data-theme="2"]{--glowA:rgba(176,107,255,.13);--glowB:rgba(55,224,232,.10);
+--base1:#221436;--base2:#150c24;--base3:#0c0716;--frameA:#3a2456;--frameB:#241536;}
+body[data-theme="3"]{--glowA:rgba(255,77,109,.13);--glowB:rgba(255,197,61,.10);
+--base1:#33121c;--base2:#200a12;--base3:#12060a;--frameA:#4c2432;--frameB:#2e1520;}
+body[data-theme="4"]{--glowA:rgba(255,214,107,.15);--glowB:rgba(255,157,46,.11);
+--base1:#33260e;--base2:#201708;--base3:#120d05;--frameA:#4c3a16;--frameB:#2e230d;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;opacity:.5;
+background-image:linear-gradient(rgba(120,200,255,.028) 1px,transparent 1px),linear-gradient(90deg,rgba(120,200,255,.028) 1px,transparent 1px);
+background-size:38px 38px;}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;
+background:radial-gradient(120% 90% at 50% 40%, transparent 55%, rgba(2,8,14,.55) 100%);}
+#dust{position:fixed;inset:0;pointer-events:none;z-index:10;overflow:hidden;opacity:.55}
+#dust span{position:absolute;bottom:-20px;border-radius:50%;animation:rise linear infinite;filter:blur(.4px)}
+@keyframes rise{to{transform:translateY(-120vh)}}
+.app{position:relative;z-index:2;min-height:100dvh;max-width:1180px;margin:0 auto;
+padding:clamp(10px,2.4vw,26px);display:flex;flex-direction:column;gap:14px}
+.side{display:contents}
+.logo h1{font-family:'Unbounded',system-ui,sans-serif;font-weight:900;font-size:clamp(26px,5vw,42px);
+letter-spacing:.03em;color:#ffd66b;line-height:1.05;
+text-shadow:0 1px 0 #e0a800,0 2px 0 #c79400,0 3px 0 #a67c00,0 4px 0 #8a6d00,0 6px 14px rgba(0,0,0,.5)}
+.logo h1 i{font-style:normal;color:#4fe3c8;
+text-shadow:0 1px 0 #0a5a4c,0 2px 0 #084a3e,0 3px 0 #063a30,0 5px 12px rgba(0,0,0,.5)}
+.logo .tag{margin-top:6px;font-size:12.5px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;
+color:#6fa3bd;text-shadow:0 2px 0 rgba(0,0,0,.5)}
+.stats{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:10px}
+.stat{background:linear-gradient(170deg,#10293d,#0a1c2b);border-radius:16px;padding:10px 14px 12px;
+box-shadow:inset 0 0 0 1px rgba(140,220,255,.10), 0 8px 18px rgba(0,0,0,.32);overflow:hidden}
+.stat .lbl{display:block;font-size:10.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#7fa5bd;margin-bottom:2px}
+.stat b{display:block;font-family:'Unbounded',system-ui,sans-serif;font-weight:700;font-size:clamp(19px,2.8vw,28px);color:#eaf6ff;
+line-height:1.15;overflow-wrap:break-word;text-shadow:0 2px 0 rgba(0,0,0,.45)}
+.stat.score b{color:#ffd66b;font-size:clamp(23px,3.4vw,34px);text-shadow:0 2px 0 #7a4c00,0 4px 10px rgba(0,0,0,.4)}
+.stat.low b{color:#ff6b6b;animation:lowPulse .9s ease-in-out infinite}
+@keyframes lowPulse{50%{transform:scale(1.14);text-shadow:0 0 18px rgba(255,90,90,.7)}}
+.bump{animation:bump .3s cubic-bezier(.2,1.6,.4,1)}
+@keyframes bump{40%{transform:scale(1.22)}}
+.goal{background:linear-gradient(170deg,#10293d,#0a1c2b);border-radius:16px;padding:12px 14px;
+box-shadow:inset 0 0 0 1px rgba(140,220,255,.10), 0 8px 18px rgba(0,0,0,.32)}
+.goal-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;
+flex-wrap:wrap;gap:6px;
+font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#7fa5bd}
+.goal-top b{font-family:'Unbounded',system-ui,sans-serif;font-size:13px;letter-spacing:0;color:#bfe6ff;text-transform:none;
+text-shadow:0 2px 0 rgba(0,0,0,.45)}
+.bar{height:14px;border-radius:99px;background:#08161f;overflow:hidden;
+box-shadow:inset 0 2px 6px rgba(0,0,0,.65), 0 0 0 1px rgba(140,220,255,.08)}
+#barFill{height:100%;width:0%;border-radius:99px;position:relative;
+background:linear-gradient(90deg,#ff9d2e,#ffd66b);transition:width .45s cubic-bezier(.2,.8,.2,1);
+box-shadow:0 0 12px rgba(255,180,60,.5)}
+#barFill::after{content:'';position:absolute;inset:0;
+background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.55) 50%,transparent 70%);
+animation:shine 2.2s linear infinite}
+@keyframes shine{to{background-position:-200% 0}}
+.chips{display:flex;gap:8px;margin-top:9px;flex-wrap:wrap;min-height:32px}
+.chip{font-weight:900;font-size:12px;padding:4px 11px;border-radius:99px;letter-spacing:.04em;
+background:rgba(140,220,255,.12);color:#bfe6ff;box-shadow:inset 0 0 0 1px rgba(140,220,255,.2)}
+.chip b{font-family:'Unbounded',system-ui,sans-serif;font-size:11px;margin-left:4px}
+.chip.rush{background:rgba(255,214,107,.18);color:#ffe89a;box-shadow:inset 0 0 0 1px rgba(255,214,107,.45)}
+.chip.combo{background:rgba(176,107,255,.16);color:#e6d5ff;box-shadow:inset 0 0 0 1px rgba(176,107,255,.4)}
+.chip.zen{background:rgba(180,220,255,.16);color:#e6f2ff;box-shadow:inset 0 0 0 1px rgba(180,220,255,.45);
+animation:chipZen 4s ease-in-out infinite}
+@keyframes chipZen{0%,100%{box-shadow:inset 0 0 0 1px rgba(180,220,255,.45)}50%{box-shadow:inset 0 0 0 1px rgba(180,220,255,.9), 0 0 12px rgba(180,220,255,.4)}}
+.chip[hidden]{display:none}
+.controls{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font-family:'Nunito',system-ui,sans-serif;font-weight:900;font-size:15px;border:none;cursor:pointer;border-radius:14px;
+padding:13px 18px;color:#06202c;background:linear-gradient(#ffd66b,#ffb02e);
+box-shadow:0 4px 0 #9c6a00, 0 12px 20px rgba(0,0,0,.35);
+transition:transform .16s cubic-bezier(.2,1.9,.4,1), box-shadow .12s ease, filter .12s;touch-action:manipulation}
+.btn:hover{filter:brightness(1.07)}
+.btn:active,.btn.pressed{transform:translateY(4px) scale(.94);filter:brightness(.95) saturate(1.15);
+box-shadow:0 1px 0 #9c6a00, 0 3px 8px rgba(0,0,0,.3)}
+.btn.ghost{background:linear-gradient(#1b3b54,#122a3d);color:#bfe6ff;
+box-shadow:0 4px 0 #061420, inset 0 0 0 1px rgba(140,220,255,.18)}
+.btn.ghost:active,.btn.ghost.pressed{box-shadow:0 1px 0 #061420, inset 0 0 0 1px rgba(140,220,255,.18)}
+.btn.teal{background:linear-gradient(#79f2d8,#1fc9a6);color:#03302a;
+box-shadow:0 4px 0 #0a7a64, 0 12px 20px rgba(0,0,0,.35)}
+.btn.teal:active{box-shadow:0 1px 0 #0a7a64}
+.btn.icon{width:44px;padding:10px 0;display:grid;place-items:center;font-size:16px;flex:none;position:relative}
+.btn.big{font-size:19px;padding:16px 40px;border-radius:18px;letter-spacing:.04em}
+.btn.wide{flex:1;width:100%;min-width:140px}
+.btn.mode{display:flex;flex-direction:column;align-items:center;gap:3px;padding:16px 10px;border-radius:18px}
+.btn.mode .ico{font-size:24px;line-height:1}
+.btn.mode .t{font-family:'Unbounded',system-ui,sans-serif;font-weight:700;font-size:15px}
+.btn.mode small{font-size:11px;font-weight:800;opacity:.7}
+.btn.off{opacity:.45;filter:grayscale(.5)}
+.btn[hidden]{display:none!important}
+.btn.on{background:linear-gradient(#ffe89a,#ffb02e);box-shadow:0 0 0 2px #ffd66b,0 0 18px rgba(255,214,107,.7),0 4px 0 #9c6a00}
+.cnt{position:absolute;top:-8px;right:-8px;min-height:20px;padding:0 6px;border-radius:99px;
+background:linear-gradient(#ffd66b,#ffb02e);color:#3a2400;font-family:'Unbounded',system-ui,sans-serif;
+font-size:10px;font-weight:700;display:grid;place-items:center;
+box-shadow:0 2px 6px rgba(0,0,0,.45);line-height:1}
+.card .btn{text-shadow:0 1px 0 rgba(255,255,255,.28),0 2px 0 rgba(0,0,0,.22),0 3px 6px rgba(0,0,0,.35)}
+.card .btn.ghost{text-shadow:0 2px 0 rgba(0,0,0,.55),0 3px 8px rgba(0,0,0,.45)}
+.card .btn small{text-shadow:0 1px 0 rgba(0,0,0,.35)}
+.card-title{font-family:'Unbounded',system-ui,sans-serif;font-weight:900;font-size:clamp(26px,6vw,40px);color:#ffd66b;
+text-shadow:0 1px 0 #e0a800,0 2px 0 #c79400,0 3px 0 #a67c00,0 4px 0 #8a6d00,0 5px 0 #6b5400,0 7px 16px rgba(0,0,0,.55);
+margin:10px 0 8px}
+.card-sub{font-size:14.5px;line-height:1.5;color:#a9c9dc;font-weight:700;text-shadow:0 2px 0 rgba(0,0,0,.45)}
+.menurow{display:flex;gap:10px;margin-top:10px}
+.overlay{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:20px;overflow:auto;
+background:rgba(3,10,16,.74);backdrop-filter:blur(6px);transition:opacity .35s}
+.overlay.hidden{display:none !important}
+.card{text-align:center;max-width:min(94vw,470px);padding:26px 26px 30px;border-radius:26px;
+background:linear-gradient(170deg,#13314a,#0b1e2e 70%);
+box-shadow:0 34px 90px rgba(0,0,0,.65), inset 0 0 0 1px rgba(150,220,255,.15), 0 0 0 1px rgba(255,200,90,.14);
+animation:cardIn .5s cubic-bezier(.2,1.35,.4,1)}
+@keyframes cardIn{from{opacity:0;transform:translateY(26px) scale(.92)}}
+.rules{list-style:none;margin:14px 0 4px;display:flex;flex-direction:column;gap:8px;text-align:left}
+.rules li{font-size:13.5px;color:#9cc2d8;font-weight:700;padding:9px 14px;border-radius:12px;
+background:rgba(8,22,34,.6);box-shadow:inset 0 0 0 1px rgba(140,220,255,.08);text-shadow:0 2px 0 rgba(0,0,0,.45)}
+.rules b{color:#ffd66b}
+.modepick{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0 10px}
+.ovbtns{display:flex;gap:12px;justify-content:center;margin-top:20px;flex-wrap:wrap}
+.final{display:flex;justify-content:center;gap:12px;margin:20px 0 6px;flex-wrap:wrap}
+.final .stat{min-width:96px;flex:1;max-width:150px}
+.final .stat b{font-size:clamp(16px,4.4vw,24px)}
+.rec{display:none;margin:10px auto 0;width:max-content;padding:6px 18px;border-radius:99px;
+font-weight:900;font-size:13px;letter-spacing:.1em;color:#3a2400;background:linear-gradient(#ffe89a,#ffb02e);
+box-shadow:0 0 24px rgba(255,190,60,.6);animation:recPulse 1s ease-in-out infinite}
+.rec.on{display:block}
+@keyframes recPulse{50%{transform:scale(1.07)}}
+.best{font-size:13px;font-weight:800;color:#7fa5bd;letter-spacing:.06em}
+.best b{font-family:'Unbounded',system-ui,sans-serif;color:#ffd66b;font-size:15px;margin-left:6px;text-shadow:0 2px 0 rgba(0,0,0,.45)}
+.stage{display:flex;justify-content:center;align-items:flex-start}
+.board-frame{position:relative;width:min(92vw,500px);aspect-ratio:1;border-radius:22px;padding:10px;
+background:linear-gradient(160deg,var(--frameA),var(--frameB) 55%,#0a1826);
+box-shadow:0 24px 60px rgba(0,0,0,.55), inset 0 0 0 1px rgba(140,220,255,.13),
+0 0 0 1px rgba(255,200,90,.16), inset 0 26px 60px rgba(70,180,255,.05);
+animation:frameGlow 5s ease-in-out infinite}
+@keyframes frameGlow{50%{box-shadow:0 24px 60px rgba(0,0,0,.55), inset 0 0 0 1px rgba(140,220,255,.2),
+0 0 0 1px rgba(255,200,90,.3), inset 0 26px 60px rgba(70,180,255,.08)}}
+#board{width:100%;height:100%;display:block;border-radius:14px;touch-action:none;cursor:pointer;
+box-shadow:0 0 0 1px rgba(140,220,255,.13);background:transparent}
+.tray-wrap{position:relative;width:min(92vw,500px);margin-top:12px}
+.tray{display:flex;justify-content:center;align-items:center;gap:clamp(8px,3vw,18px);
+background:linear-gradient(170deg,#0f2a3e,#0a1c2b);border-radius:20px;
+padding:clamp(10px,2.6vw,16px) clamp(8px,2vw,14px);min-height:96px;
+box-shadow:inset 0 0 0 1px rgba(140,220,255,.10), 0 12px 26px rgba(0,0,0,.4)}
+.tpiece{position:relative;touch-action:none;cursor:grab;transition:transform .18s cubic-bezier(.2,1.6,.4,1), opacity .2s}
+.tpiece.gone{opacity:0;transform:scale(.3);pointer-events:none}
+.tpiece svg{display:block;filter:drop-shadow(0 5px 8px rgba(0,0,0,.45));transition:filter .15s}
+.tpiece.sel svg{filter:drop-shadow(0 0 10px rgba(255,214,107,.9)) drop-shadow(0 5px 8px rgba(0,0,0,.45))}
+.banner{position:absolute;left:50%;top:36%;transform:translate(-50%,-50%) scale(.4);opacity:0;
+pointer-events:none;z-index:5;white-space:nowrap;font-family:'Unbounded',system-ui,sans-serif;font-weight:900;
+font-size:clamp(19px,4.4vw,34px);letter-spacing:.04em;color:#ffd66b;
+text-shadow:0 3px 0 #7a4c00, 0 10px 34px rgba(255,180,40,.5)}
+.banner.teal{color:#5ff2d6;text-shadow:0 3px 0 #0a5a4c,0 10px 34px rgba(60,230,200,.5)}
+.banner.bad{color:#ff8b8b;text-shadow:0 3px 0 #6e1414,0 10px 34px rgba(255,90,90,.45)}
+.banner.show{animation:bannerIn 1.15s cubic-bezier(.2,1.4,.3,1) forwards}
+@keyframes bannerIn{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}
+16%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}28%{transform:translate(-50%,-50%) scale(1)}
+72%{opacity:1;transform:translate(-50%,-56%) scale(1)}
+100%{opacity:0;transform:translate(-50%,-80%) scale(.96)}}
+.toast{position:absolute;left:50%;top:50%;z-index:6;pointer-events:none;opacity:0;
+transform:translate(-50%,-50%) scale(.7);
+background:linear-gradient(170deg,#1d4258,#123043);padding:14px 26px;border-radius:18px;
+box-shadow:0 18px 50px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,214,107,.35), 0 0 0 1px rgba(255,200,90,.2);
+font-family:'Unbounded',system-ui,sans-serif;font-weight:700;font-size:clamp(13px,3.2vw,20px);color:#ffd66b;
+white-space:pre-line;max-width:min(86vw,430px);text-align:center;line-height:1.45;
+text-shadow:0 2px 0 #7a4c00}
+.toast.show{animation:toastIn 1.25s cubic-bezier(.2,1.4,.3,1) forwards}
+.toast.show.long{animation-duration:2.8s;font-size:clamp(12px,3.1vw,18px);max-width:min(92vw,460px);line-height:1.45}
+@keyframes toastIn{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}
+14%{opacity:1;transform:translate(-50%,-50%) scale(1.06)}
+26%{transform:translate(-50%,-50%) scale(1)}
+78%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+100%{opacity:0;transform:translate(-50%,-66%) scale(.96)}}
+.drag-ghost{position:fixed;z-index:999;pointer-events:none;display:none}
+.drag-ghost svg{display:block;filter:drop-shadow(0 14px 18px rgba(0,0,0,.55))}
+.setrow{display:flex;align-items:center;justify-content:space-between;gap:12px;
+background:rgba(8,22,34,.6);border-radius:12px;padding:10px 14px;margin-bottom:10px;
+box-shadow:inset 0 0 0 1px rgba(140,220,255,.08);font-weight:800;font-size:14px;color:#cfe6f4;
+text-shadow:0 2px 0 rgba(0,0,0,.45)}
+.lblist{list-style:none;margin:6px 0 2px;display:flex;flex-direction:column;gap:6px;text-align:left}
+.lblist li{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:12px;
+background:rgba(8,22,34,.6);box-shadow:inset 0 0 0 1px rgba(140,220,255,.08);
+font-weight:800;font-size:14px;color:#cfe6f4}
+.lblist li .pos{font-family:'Unbounded',system-ui,sans-serif;font-size:12px;color:#7fa5bd;width:26px;flex:none}
+.lblist li .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lblist li .sc{font-family:'Unbounded',system-ui,sans-serif;font-size:13px;color:#ffd66b;text-shadow:0 2px 0 rgba(0,0,0,.4)}
+.lblist li.me{box-shadow:inset 0 0 0 2px rgba(255,214,107,.55);background:rgba(255,214,107,.10)}
+.lvlmap{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:16px 0 6px}
+.lvcell{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+padding:10px 4px 9px;border-radius:16px;cursor:pointer;border:none;font-family:'Nunito',system-ui,sans-serif;
+background:linear-gradient(170deg,#123249,#0c2032);color:#bfe6ff;
+box-shadow:inset 0 0 0 1px rgba(140,220,255,.14), 0 5px 0 #061420, 0 10px 18px rgba(0,0,0,.35);
+transition:transform .14s cubic-bezier(.2,1.8,.4,1)}
+.lvcell:active{transform:translateY(4px) scale(.95)}
+.lvcell .n{font-family:'Unbounded',system-ui,sans-serif;font-weight:700;font-size:16px}
+.lvcell .st{font-size:13px;line-height:1}
+.lvcell.locked{opacity:.42;filter:grayscale(.7);cursor:default;box-shadow:inset 0 0 0 1px rgba(140,220,255,.08), 0 5px 0 #061420}
+.lvcell.cur{color:#ffe89a;box-shadow:inset 0 0 0 2px #ffd66b, 0 0 18px rgba(255,214,107,.5), 0 5px 0 #061420;
+animation:curPulse 1.4s ease-in-out infinite}
+@keyframes curPulse{50%{box-shadow:inset 0 0 0 2px #ffe89a, 0 0 26px rgba(255,214,107,.75), 0 5px 0 #061420}}
+.lvcell.done{background:linear-gradient(170deg,#1d4a3a,#0e2b22)}
+.stage{order:3}.stats{order:1}.goal{order:2}.logo{order:0}.controls{order:4}.best{order:5}
+.tray-wrap{order:3.5}
+@media (min-width:960px){
+.app{display:grid;grid-template-columns:340px minmax(0,1fr);gap:40px;align-items:center;
+min-height:100dvh;padding:30px}
+.side{display:flex;flex-direction:column;gap:18px;order:0}
+.colgame{order:0;display:flex;flex-direction:column}
+.board-frame{width:min(540px,calc(100vh - 160px))}
+.tray-wrap{width:min(540px,calc(100vh - 160px))}
+}
+@media (prefers-reduced-motion:reduce){
+#dust span,.banner,#barFill::after,.toast,.lvcell.cur{animation:none!important}
+}
+</style>
+</head>
+<body>
+<div id="dust"></div>
+<main class="app">
+<aside class="side">
+<div class="logo">
+<h1>КРИСТА<i>ЛЛЫ</i></h1>
+<p class="tag">◆ собери блоки в ряд · взрывай линии ◆</p>
+</div>
+<div class="stats">
+<div class="stat score"><span class="lbl">Очки</span><b id="score">0</b></div>
+<div class="stat" id="midStat"><span class="lbl" id="lblMid">Уровень</span><b id="mid">1</b></div>
+<div class="stat" id="movesStat"><span class="lbl" id="lblRight">Цель</span><b id="moves">—</b></div>
+</div>
+<div class="goal" id="goalBox">
+<div class="goal-top"><span id="goalLbl">Прогресс уровня</span><b><span id="goalNum">0 / 1 000</span></b></div>
+<div class="bar"><div id="barFill"></div></div>
+<div class="chips">
+<span class="chip rush" id="chipRush" hidden>⚡ ×2<b id="chipRushN"></b></span>
+<span class="chip combo" id="chipCombo" hidden>🔥 Комбо ×<b id="chipComboN">1</b></span>
+<span class="chip zen" id="chipZen" hidden>🧘 Дзен</span>
+</div>
+</div>
+<div class="controls">
+<button class="btn ghost icon" id="btnLevels" title="Выбор уровня">🗺️</button>
+<button class="btn ghost icon" id="btnRestart" title="Заново">↻</button>
+<button class="btn ghost icon" id="btnMenu" title="В меню">🏠</button>
+<button class="btn ghost icon" id="btnSound" title="Звук">🔊</button>
+<button class="btn ghost icon" id="toolRock" title="Кирка: пробить породу" hidden>⛏️<span class="cnt">2</span></button>
+</div>
+<div class="best">Рекорд:<b id="best">0</b></div>
+</aside>
+<section class="stage">
+<div class="colgame">
+<div class="board-frame">
+<canvas id="board"></canvas>
+<div class="banner" id="banner"></div>
+<div class="toast" id="toast"></div>
+</div>
+<div class="tray-wrap">
+<div class="tray" id="tray"></div>
+</div>
+</div>
+</section>
+</main>
+<div class="drag-ghost" id="dragGhost"></div>
+
+<div class="overlay" id="startOv">
+<div class="card">
+<h2 class="card-title">КРИСТАЛЛЫ</h2>
+<p class="card-sub">Перетаскивай кристаллические блоки на рудную породу.<br>Соберёшь ряд или столбец — он взорвётся!</p>
+<div class="modepick">
+<button class="btn mode" data-mode="classic"><span class="ico">🏆</span><span class="t">Классика</span><small>уровни · цели · звёзды</small></button>
+<button class="btn mode teal" data-mode="zen"><span class="ico">🧘</span><span class="t">Дзен</span><small>без целей · расслабься</small></button>
+</div>
+<div class="menurow">
+<button class="btn ghost wide" id="btnContinue" hidden>▶ Продолжить</button>
+<button class="btn ghost wide" id="btnHow">❓ Как играть</button>
+<button class="btn ghost wide" id="btnLb">🏅 Рекорды</button>
+</div>
+<div class="menurow">
+<button class="btn ghost wide" id="btnSettings">⚙️ Настройки</button>
+</div>
+</div>
+</div>
+
+<div class="overlay hidden" id="howOv">
+<div class="card">
+<h2 class="card-title">КАК ИГРАТЬ</h2>
+<ul class="rules">
+<li>🖐 <b>Перетащи</b> один из трёх блоков внизу на поле 8×8.</li>
+<li>👻 Призрак покажет, встанет ли блок. <b>Зелёный</b> — можно, <b>красный</b> — мешает порода.</li>
+<li>🪨 На поле сразу есть <b>застывшая порода и кристаллы-препятствия</b> — вставляй фигуры только в свободные ячейки.</li>
+<li>⛏️ В Классике доступны <b>2 удара киркой</b> за уровень: нажми ⛏️ и тапни по породе, чтобы разбить её.</li>
+<li>💥 Соберёшь <b>полный ряд или столбец</b> — он взрывается вместе с породой в нём!</li>
+<li>🔥 Несколько линий за одну установку — <b>комбо-множитель</b> и штурм ×2!</li>
+<li>🎯 В Классике набирай очки цели уровня, чтобы проходить дальше и получать ⭐.</li>
+<li>🚫 Блок нельзя поставить никуда — партия окончена.</li>
+</ul>
+<div class="ovbtns"><button class="btn big" id="btnHowClose">Понятно!</button></div>
+</div>
+</div>
+
+<div class="overlay hidden" id="lbOv">
+<div class="card">
+<h2 class="card-title">РЕКОРДЫ</h2>
+<ul class="lblist" id="lbList"></ul>
+<div class="ovbtns"><button class="btn big" id="btnLbClose">Закрыть</button></div>
+</div>
+</div>
+
+<div class="overlay hidden" id="setOv">
+<div class="card">
+<h2 class="card-title">НАСТРОЙКИ</h2>
+<div class="setrow"><span>🎨 Тема оформления</span><button class="btn ghost" id="btnThemeSet">Лазурный штрек</button></div>
+<div class="setrow"><span>🔊 Звук</span><button class="btn ghost" id="btnSoundSet">Вкл</button></div>
+<div class="setrow"><span>📳 Вибрация</span><button class="btn ghost" id="btnBuzzSet">Вкл</button></div>
+<div class="ovbtns"><button class="btn big" id="btnSetClose">Готово</button></div>
+</div>
+</div>
+
+<div class="overlay hidden" id="lvlOv">
+<div class="card">
+<h2 class="card-title">УРОВНИ</h2>
+<p class="card-sub" id="lvlSub">Классика · пройдено 0 из 30</p>
+<div class="lvlmap" id="lvlMap"></div>
+<div class="ovbtns"><button class="btn big" id="btnLvlClose">Закрыть</button></div>
+</div>
+</div>
+
+<div class="overlay hidden" id="endOv">
+<div class="card">
+<h2 class="card-title" id="endTitle">Уровень пройден!</h2>
+<div id="endStars" style="font-size:34px;letter-spacing:6px;margin:4px 0 2px">⭐⭐⭐</div>
+<div class="final">
+<div class="stat score"><span class="lbl">Очки</span><b id="endScore">0</b></div>
+<div class="stat"><span class="lbl" id="endMidLbl">Уровень</span><b id="endMid">1</b></div>
+<div class="stat"><span class="lbl">Макс. комбо</span><b id="endCombo">×1</b></div>
+</div>
+<div class="rec" id="endRec">🏆 Новый рекорд!</div>
+<div class="ovbtns">
+<button class="btn big" id="btnNext">Дальше ➜</button>
+<button class="btn ghost big" id="btnAgain">↻ Заново</button>
+<button class="btn ghost big" id="btnEndMenu">🏠</button>
+</div>
+</div>
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>
